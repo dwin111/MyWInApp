@@ -62,8 +62,15 @@ LRESULT CALLBACK MainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 		MainWindAddMenus(hWnd);
 		MainWindAddWidgets(hWnd);
 		SetOpenFileParams(hWnd);
+		SerialUpdate();
 		break;
 	case WM_COMMAND:
+		if ((wp >= COM_SELECT_INDEX) && (wp < COM_SELECT_INDEX + COM_PORT_AMOINT)) {
+			selectedPort = wp - COM_SELECT_INDEX;
+			SetWindowStatus("PORT" + std::to_string(selectedPort));
+			SerialUpdate();
+		}
+
 		switch (wp)
 		{
 		case ON_MENU_CLICK_1:
@@ -92,6 +99,9 @@ LRESULT CALLBACK MainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 		case ON_CONNECTED:
 			ConnectRequest();
 			break;
+		case ON_SERIAL_REFRESH:
+			SerialUpdate();
+			break;
 		}
 
 		break;
@@ -107,15 +117,24 @@ LRESULT CALLBACK MainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 void MainWindAddMenus(HWND hWnd)
 {
-	HMENU RootMenu = CreateMenu(); //Ñîçäàíåè TollBar
-	HMENU SubMenu = CreateMenu(); //Ñîçäàíåè TollBar
+	HMENU RootMenu = CreateMenu(); //Ð¡Ð¾Ð·Ð´Ð°Ð½ÐµÐ¸ TollBar
+	HMENU SubMenu = CreateMenu(); //Ð¡Ð¾Ð·Ð´Ð°Ð½ÐµÐ¸ TollBar
+
+	ComPortSubMenu = CreateMenu();
+	ComPortListMenu = CreateMenu();
+	
 
 	AppendMenu(SubMenu, MF_STRING, ON_BUTTON_CLICK_3, L"Save");
 	AppendMenu(SubMenu, MF_STRING, ON_BUTTON_CLICK_2, L"Load");
+
 	AppendMenu(SubMenu, MF_SEPARATOR, NULL, NULL);               //-------------------
+
 	AppendMenu(SubMenu, MF_STRING, ON_CONNECTED, L"Connected");
+	AppendMenu(ComPortSubMenu, MF_STRING, ON_SERIAL_REFRESH, L"Refresh ports");
+	AppendMenu(ComPortSubMenu, MF_POPUP, (UINT_PTR)ComPortListMenu, L"Selected pot");
 
 	AppendMenu(RootMenu, MF_POPUP, (UINT_PTR)SubMenu, L"File");
+	AppendMenu(RootMenu, MF_POPUP, (UINT_PTR)ComPortSubMenu, L"File");
 
 	SetMenu(hWnd, RootMenu);
 }
