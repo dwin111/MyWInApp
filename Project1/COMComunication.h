@@ -1,10 +1,10 @@
 #pragma once
 
-#define NO_DEVICES				-4
-#define NO_SETTING				-3
+#define NO_DEVICES		-4
+#define NO_SETTING		-3
 #define	FAILED_TO_SET_OPTIONS	-2
 #define	FAILED_TO_SET_TIMEOUT	-1
-#define	ALL_OK					 0
+#define	ALL_OK			 0
 
 #define SIZE_SERIAL_BUFFER       11
 
