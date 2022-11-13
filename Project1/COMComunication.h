@@ -2,8 +2,8 @@
 
 #define NO_DEVICES		-4
 #define NO_SETTING		-3
-#define	FAILED_TO_SET_OPTIONS	-2
-#define	FAILED_TO_SET_TIMEOUT	-1
+#define	FAILED_TO_SET_OPTIONS   -2
+#define	FAILED_TO_SET_TIMEOUT   -1
 #define	ALL_OK			 0
 
 #define SIZE_SERIAL_BUFFER       11
@@ -109,5 +109,36 @@ void SerialWrite(char* buffer, int length)
 	}
 	DWORD BytesIterated;
 	WriteFile(connectedPort,buffer, length, &BytesIterated,NULL);
+}
 
+void SerialUpdate() 
+{
+	while (RemoveMenu(ComPortListMenu, 0, MF_BYPOSITION));
+	int redioLast = 0, radioCurrent = -1;
+
+	for (int i = 1; i < COM_PORT_AMOINT; i++)
+	{
+		HANDLE port = CreateFileA(
+			("\\\\.\\COM" + std::to_string(i)).c_str(),
+			GENERIC_READ | GENERIC_WRITE,
+			0,
+			NULL,
+			OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL,
+			NULL);
+		if (port != INVALID_HANDLE_VALUE) {
+			AppendMenuA(ComPortListMenu, MF_STRING, COM_SELECT_INDEX + i, ("COM" + std::to_string(i)).c_str());
+			if (i == selectedPort) {
+				radioCurrent = redioLast;
+			}
+			++redioLast;
+		}
+		CloseHandle(port);
+	}
+	if (redioLast) {
+		--redioLast;
+	}
+	if (radioCurrent != -1) {
+		CheckMenuItem(ComPortListMenu, radioCurrent,MF_BYPOSITION | MF_CHECKED);
+	}
 }
