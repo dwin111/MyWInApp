@@ -8,9 +8,9 @@
 #define ON_MENU_CLICK_2	    2
 #define ON_MENU_CLICK_3	    3
 
-#define ON_BUTTON_CLICK_1	  4
-#define ON_BUTTON_CLICK_2	  5
-#define ON_BUTTON_CLICK_3	  6
+#define ON_BUTTON_CLICK_1	4
+#define ON_BUTTON_CLICK_2	5
+#define ON_BUTTON_CLICK_3	6
 
 #define ON_CONNECTED        7
 
