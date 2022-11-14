@@ -1,14 +1,14 @@
 #pragma once
 
-#define NO_DEVICES		-4
-#define NO_SETTING		-3
-#define	FAILED_TO_SET_OPTIONS   -2
-#define	FAILED_TO_SET_TIMEOUT   -1
-#define	ALL_OK			 0
+#define NO_DEVICES				-4
+#define NO_SETTING				-3
+#define	FAILED_TO_SET_OPTIONS	-2
+#define	FAILED_TO_SET_TIMEOUT	-1
+#define	ALL_OK					 0
 
 #define SIZE_SERIAL_BUFFER       11
 
-int SerialBegin(int BaudRate, int comport) 
+int SerialBegin(int BaudRate, int comport)
 {
 	CloseHandle(connectedPort);
 
@@ -21,38 +21,38 @@ int SerialBegin(int BaudRate, int comport)
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
 
-	if (connectedPort == INVALID_HANDLE_VALUE) 
+	if (connectedPort == INVALID_HANDLE_VALUE)
 	{
 		return NO_DEVICES;
 	}
 	DCB SerialParams;
 	SerialParams.DCBlength = sizeof(SerialParams);
 
-	if (!GetCommState(connectedPort, &SerialParams)) 
+	if (!GetCommState(connectedPort, &SerialParams))
 	{
 		return NO_SETTING;
 	}
 	SerialParams.BaudRate = BaudRate;
 	SerialParams.ByteSize = 8;
 	SerialParams.StopBits = ONESTOPBIT;
-	SerialParams.Parity   = NOPARITY;
+	SerialParams.Parity = NOPARITY;
 
-	if (!SetCommState(connectedPort, &SerialParams)) 
+	if (!SetCommState(connectedPort, &SerialParams))
 	{
 		return FAILED_TO_SET_OPTIONS;
 	}
 
 	COMMTIMEOUTS SerialTimeouts;
-	SerialTimeouts.ReadIntervalTimeout         = 1;
-	SerialTimeouts.ReadTotalTimeoutConstant    = 1;
-	SerialTimeouts.ReadTotalTimeoutMultiplier  = 1;
-	SerialTimeouts.WriteTotalTimeoutConstant   = 1;
+	SerialTimeouts.ReadIntervalTimeout = 1;
+	SerialTimeouts.ReadTotalTimeoutConstant = 1;
+	SerialTimeouts.ReadTotalTimeoutMultiplier = 1;
+	SerialTimeouts.WriteTotalTimeoutConstant = 1;
 	SerialTimeouts.WriteTotalTimeoutMultiplier = 1;
-	if (!SetCommTimeouts(connectedPort, &SerialTimeouts)) 
+	if (!SetCommTimeouts(connectedPort, &SerialTimeouts))
 	{
 		return FAILED_TO_SET_TIMEOUT;
 	}
-	
+
 	return ALL_OK;
 }
 
@@ -87,31 +87,35 @@ void ConnectRequest(void)
 	CloseHandle(connectedPort);
 }
 
-void SerialRead(void) 
-{	
-	if (!isConnected) {
-		return;
-	}
-	else if (!SetCommMask(connectedPort, EV_RXCHAR)) {
-		ConnectRequest();
-		return;
-	}
+DWORD WINAPI SrialRead(LPVOID lpParameter)
+{
 	DWORD BytesIterated;
-	if (ReadFile(connectedPort, Buffer, SIZE_SERIAL_BUFFER, &BytesIterated, NULL)) {
-		SetWindowTextA(TextBox1, Buffer);
+
+	while (isThreading) {
+		if (!isConnected) {
+			continue;
+		}
+		else if (!SetCommMask(connectedPort, EV_RXCHAR)) {
+			ConnectRequest();
+			continue;
+		}
+		if (ReadFile(connectedPort, Buffer, SIZE_SERIAL_BUFFER, &BytesIterated, NULL)) {
+			SetWindowTextA(TextBox1, Buffer);
+		}
 	}
+	return 0;
 }
 
-void SerialWrite(char* buffer, int length) 
+void SerialWrite(char* buffer, int length)
 {
 	if (!isConnected) {
 		return;
 	}
 	DWORD BytesIterated;
-	WriteFile(connectedPort,buffer, length, &BytesIterated,NULL);
+	WriteFile(connectedPort, buffer, length, &BytesIterated, NULL);
 }
 
-void SerialUpdate() 
+void SerialUpdate()
 {
 	while (RemoveMenu(ComPortListMenu, 0, MF_BYPOSITION));
 	int redioLast = 0, radioCurrent = -1;
@@ -139,6 +143,8 @@ void SerialUpdate()
 		--redioLast;
 	}
 	if (radioCurrent != -1) {
-		CheckMenuItem(ComPortListMenu, radioCurrent,MF_BYPOSITION | MF_CHECKED);
+		CheckMenuItem(ComPortListMenu, radioCurrent, MF_BYPOSITION | MF_CHECKED);
 	}
 }
+
+
